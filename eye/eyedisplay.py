@@ -27,6 +27,10 @@ class EyeDisplay():
 
     @classmethod
     def reset_eye_background(cls, color='Blue'):
+    """
+    color: [Blue, Green, Purple, Yellow]
+       
+    """
         if not cls.idle.is_set():
             cls.idle.set()
             cls.eye_color = color
@@ -63,8 +67,10 @@ class EyeDisplay():
         
         """
         Args:
-        ball_num : 1 ~ 10
-        lid_num : 1 ~ 11
+        ball_num : 
+		normal eye_ball : 1 ~ 10 [e.g. eye_ball]
+		eyes with animation : 1 ~ 3 [e.g. flip, hug, ball, etc]
+        lid_num : 1 ~ 14, 31 ~ 40 
         dx,dy is coords of eyeball
     
         ball_type(str): [eye_ball, ball, face, flip, heat, hug, teaser, voice,

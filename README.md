@@ -1,8 +1,8 @@
-# MarsCat 开发手册
+﻿# MarsCat 开发手册
 
 ## 开发前的准备
 - 连接显示器、鼠标、键盘
-- 连接wifi后，ssh、vnc等远程连接
+- 连接wifi后，用ssh或vnc等远程连接
 
     **注 账户和密码都是 `pi`**
 - 在开发前需要停止猫咪的开机自启服务
@@ -53,10 +53,12 @@ eyes.display_eye(ball_num = 1, lid_num = 1, ball_type = 'eye_ball', dx = 0, dy =
 """
 args:
     ball_num --> int:
-        1~10
+        normal eye_ball : 1~10 [e.g. eye_ball]
+	eyes with animation : 1~3 [e.g. flip, hug, ball, etc]
+
         # Eyeball size
     lid_num --> int:
-        1~10
+        1~14, 31~40
         # Eyelid size
     ball_type --> str:
         [eye_ball, ball, face, flip, heat, hug, teaser, voice,
@@ -76,7 +78,7 @@ args:
 
 import catsound
 
-s = catsound.CatSound()
+s = CatSound()
 s.meow()
 ```
 
@@ -89,7 +91,7 @@ import vision_base
 vision = vision_base.Vision()
 vision.test()
 ```
-可以对人脸、蓝色的小球、配套的逗猫棒以及配套的二维码进行识别。
+可以对人脸、蓝色的小球以及配套的二维码进行识别。
 
 
 ## 语音识别
