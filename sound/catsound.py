@@ -8,6 +8,18 @@ class CatSound():
         pass
 
     def meow(self, async_play=True):
+        """
+        If you want to add a new sound file, add it to the "Sounds" folder.
+        One sound file corresponds to three files with different names.
+        like this:
+            sounds/new_file-quite.mp3
+            sounds/new_file-medium.mp3
+            sounds/new_file-loud.mp3
+            
+        add new function:
+            def new_sound(self, async_play=True):
+                self.play_sound('new_file.mp3', async_play)
+        """
         self.play_sound('meow-normal-2s.wav', async_play)
 
     def purr(self, async_play=True):

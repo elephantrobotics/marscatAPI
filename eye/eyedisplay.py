@@ -27,10 +27,11 @@ class EyeDisplay():
 
     @classmethod
     def reset_eye_background(cls, color='Blue'):
-    """
-    color: [Blue, Green, Purple, Yellow]
-       
-    """
+        """
+        set background color.
+        color: [Blue, Green, Purple, Yellow]
+
+        """
         if not cls.idle.is_set():
             cls.idle.set()
             cls.eye_color = color
@@ -55,7 +56,10 @@ class EyeDisplay():
         return _eye_lid
 
     def get_eye_ball(self, num, eye_type: str = 'eye_ball'):
-        image_name = f'eye_ball_{num}.png'
+        """
+        Set up a picture of the eyeball
+        """
+        image_name = f'eye_ball_{num}.png' # get eye ball photo, You can change it to your image
         image_path = '/'.join([defalut_path, eye_type, image_name])
         _eye_ball = Image.open(image_path).convert("RGBA")
         print(image_path)
@@ -64,15 +68,14 @@ class EyeDisplay():
     def display_eye(self, ball_num: int = 1, lid_num: int = 1,
                     ball_type: str = 'eye_ball',
                     dx: int = 0, dy: int = 0):
-        
         """
         Args:
         ball_num : 
-		normal eye_ball : 1 ~ 10 [e.g. eye_ball]
-		eyes with animation : 1 ~ 3 [e.g. flip, hug, ball, etc]
+                normal eye_ball : 1 ~ 10 [e.g. eye_ball]
+                eyes with animation : 1 ~ 3 [e.g. flip, hug, ball, etc]
         lid_num : 1 ~ 14, 31 ~ 40 
         dx,dy is coords of eyeball
-    
+
         ball_type(str): [eye_ball, ball, face, flip, heat, hug, teaser, voice,
                          low_power, charging, dizzy, bowlorhungry, sleep
                          high_temperature, hw_error]
@@ -87,6 +90,5 @@ class EyeDisplay():
 
 if __name__ == '__main__':
     a = EyeDisplay()
-    a.display_eye(2, ball_type = 'flip')
+    a.display_eye()
     time.sleep(1)
-    

@@ -1,24 +1,24 @@
-﻿# MarsCat 开发手册
+﻿# MarsCat API
 
-## 开发前的准备
-- 连接显示器、鼠标、键盘
-- 连接wifi后，用ssh或vnc等远程连接
+## Preparation before development
+- Connect the monitor, mouse, and keyboard
+- Or after connecting to wifi, use SSH or VNC for remote connection
 
-    **注 账户和密码都是 `pi`**
-- 在开发前需要停止猫咪的开机自启服务
+> Note: The connected account and password are pi
+- Before development, it is necessary to stop the startup service of the cat
     ```
     cd ~/marsai
     ./tools/stop-systemd-services.sh
     ./tools/disable-systemd-services.sh
     ```
-- 如果你要放弃了，重启猫的服务
+- If you want the Marscat to move on its own
     ```
     cd ~/marsai
     ./tools/enable-systemd-services.sh
     ./tools/start-systemd-services.sh
     ```
 
-## 基本运动
+## The basic motion
 ```
 # file: move/movement.py
 # See this file for more functions
@@ -30,7 +30,7 @@ mv.set_walk(step = 2, speed = 0.7)
 ...
 ```
 
-## 触摸检测
+## Touch detection
 ```
 # file: sensor/touch.py
 
@@ -41,7 +41,7 @@ tc.test_touch()
 ```
 
 
-## 显示眼睛
+## According to the eye
 ```
 # file: eye/eyedisplay.py
 
@@ -72,7 +72,9 @@ args:
 """
 ```
 
-## 播放声音
+> If you want to use the new eye image, check the code for eye/eyedisplay.py
+
+## Play sound
 ```
 # file: sound/catsound.py
 
@@ -81,8 +83,9 @@ import catsound
 s = CatSound()
 s.meow()
 ```
+> If you want to change the sound, check the code for sound/catsound.py
 
-## 图像识别
+## Image recognition
 ```
 # file: vision/vision_base.py
 
@@ -91,10 +94,10 @@ import vision_base
 vision = vision_base.Vision()
 vision.test()
 ```
-可以对人脸、蓝色的小球以及配套的二维码进行识别。
+It can recognize faces, matching blue balls and QR codes.
 
 
-## 语音识别
+## Speech recognition
 
 ```
 # file: voice/voice_base.py
@@ -102,18 +105,18 @@ vision.test()
 import voice_base
 voice_base.test_voice()
 ```
-### 选择语音识别语言
+### Select a speech recognition language
 ```
-# file: voice/voice_base.py 28行
+# file: voice/voice_base.py line 28 
 def speak_config(self):
     language = "Chinese"
 ```
 
-### 语音唤醒
+### Voice wake up
 
-**唤醒词**：
+**Wake up the word**：
 ```
-# file: voice/voice_base.py 142行
+# file: voice/voice_base.py line 142
 
 ACTIVATION_WORDS = [
                             'HI MARSCAT', 'MARSCAT', 'MASSCAT', 'MASKCAT', 'MARS',
@@ -122,8 +125,8 @@ ACTIVATION_WORDS = [
 ```
 
 ```
-# file: voice/voice_base.py 152行
+# file: voice/voice_base.py line 152
 if ff:
-    唤醒成功，进入聆听模式
+    Wake up successful, enter listening mode
 ```
-voice/corpus/***.dic的文件中包含了三种语言的所有可用于识别的词
+voice/corpus/***.dic The file contains all the identifiable words in the three languages
