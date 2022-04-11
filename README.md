@@ -30,6 +30,30 @@ mv.set_walk(step = 2, speed = 0.7)
 ...
 ```
 
+## Use of distance sensors
+```
+# file: move/movement.py
+# See this file for more functions
+
+import movement
+
+mv = movement.MoveMent()
+print(mv.get_tof())
+...
+```
+
+## Get battery power
+```
+# file: move/movement.py
+# See this file for more functions
+
+import movement
+
+mv = movement.MoveMent()
+print(mv.get_battery())
+...
+```
+
 ## Touch detection
 ```
 # file: sensor/touch.py
@@ -38,6 +62,21 @@ import touch
 
 tc = touch.Touch()
 tc.test_touch()
+
+# or
+
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+IOlist = [22, 23, 24, 16, 13, 21, 4]
+res = [0 for _ in range(7)]
+for i in range(len(IOlist)):
+    GPIO.setup(IOlist[i], GPIO.IN)
+
+while True:
+    for i in range(len(IOlist)):
+        res[i] = GPIO.input(IOlist[i])
+    print(res)
 ```
 
 
@@ -71,8 +110,20 @@ args:
         # (0, 0) in the middle
 """
 ```
+### Change eye image
 
-> If you want to use the new eye image, check the code for eye/eyedisplay.py
+Change the image of the eyeball
+
+Add the new image (The image resolution is 128x128) to the eye/eyeball/eye_ball folder.
+
+    For example: The new image added is called eye_ball_15.png
+
+```python
+import eyedisplay
+
+eyes = eyedisplay.EyeDisplay()
+eyes.display_eye(ball_num = 15)
+```
 
 ## Play sound
 ```
@@ -83,7 +134,37 @@ import catsound
 s = CatSound()
 s.meow()
 ```
-> If you want to change the sound, check the code for sound/catsound.py
+
+### Change the sound
+
+1.If you want to add a new sound file, add it to the "Sounds" folder.One sound file corresponds to three files with different names.
+
+    like this:
+        sounds/new_file-quite.mp3
+        sounds/new_file-medium.mp3
+        sounds/new_file-loud.mp3
+            
+2.Change the catsound.py file
+```python
+# catsound.py
+class CatSound():
+    def __init__(self):
+        pass
+    ...
+    def new_sound(self, async_play=True):
+        self.play_sound('new_file.mp3', async_play)
+
+    ...
+```
+3.Run
+```
+# file: sound/catsound.py
+
+import catsound
+
+s = CatSound()
+s.new_sound()
+```
 
 ## Image recognition
 ```
