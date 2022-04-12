@@ -61,7 +61,8 @@ print(mv.get_battery())
 import touch
 
 tc = touch.Touch()
-tc.test_touch()
+while True:
+    tc.get_touch()
 
 # or
 
