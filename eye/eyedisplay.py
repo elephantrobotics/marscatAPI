@@ -47,6 +47,106 @@ class EyeDisplay():
             cls.idle.wait()
         cls.idle.clear()
         # OLED.Device_Init()
+        
+    def blink(self, lid_percentage=1):
+        if EyeDisplay.playing:
+            return
+        EyeDisplay.playing = True
+        dx = self.current_eye[-1][0]
+        dy = self.current_eye[-1][1]
+        ball_percentage = self.current_eye[-1][2]
+        for i in range(1, 12, 2):
+            self.display_eye(ball_percentage, i, dx=dx, dy=dx)
+        for i in range(1, 12, 2):
+            self.display_eye(ball_percentage, 12 - i, dx=dx, dy=dy)
+        time.sleep(0.1)
+        del self.current_eye[:]
+        self.current_eye.append((dx, dy, ball_percentage, lid_percentage))
+        EyeDisplay.playing = False
+        return self.current_eye
+
+    def display_eye_squint(self, stop=False, random_times=2,
+                           ball_percentage=8, lid_percentage=1):
+        if EyeDisplay.playing:
+            return
+        EyeDisplay.playing = True
+        dx = self.current_eye[-1][0]
+        dy = self.current_eye[-1][1]
+        sleep_time = 0.07
+        for i in range(31, 41):
+            self.display_eye(ball_percentage, i, dx=dx, dy=dy)
+
+        for _ in range(random_times):
+            for i in range(1, 5):
+                self.display_eye(ball_percentage, 41 - i, dx=dx, dy=dy)
+                time.sleep(0.07)
+            for i in range(37, 41):
+                self.display_eye(ball_percentage, i, dx=dx, dy=dy)
+                time.sleep(sleep_time)
+            sleep_time = 0.12
+            if not stop:
+                break
+
+        time.sleep(0.1)
+        for i in range(1, 11):
+            self.display_eye(ball_percentage, 41 - i, dx=dx, dy=dy)
+        self.display_eye(ball_percentage, 1, dx=dx, dy=dy)
+        del self.current_eye[:]
+        self.current_eye.append((dx, dy, ball_percentage, lid_percentage))
+        EyeDisplay.playing = False
+        return self.current_eye
+
+    def display_eye_wakeUp(self, ball_num=8, lid_num=11, dx=0, dy=0):
+        if EyeDisplay.playing:
+            return
+        EyeDisplay.playing = True
+        self.display_eye(ball_num, lid_num, dx=dx, dy=dy)
+        for b in range(1, 7):
+            self.display_eye(ball_num, (11 - b), dx=dx, dy=dy)
+            time.sleep(0.05)
+        for b in range(6, 12):
+            self.display_eye(ball_num, b, dx=dx, dy=dy)
+        for b in range(1, 11):
+            self.display_eye(ball_num, (11 - b), dx=dx, dy=dy)
+            time.sleep(0.02)
+        del self.current_eye[:]
+        self.current_eye.append((dx, dy, ball_num, lid_num))
+        EyeDisplay.playing = False
+        return self.current_eye
+
+    def display_eye_close(self, ball_percentage=8, lid_percentage=1):
+        if EyeDisplay.playing:
+            return
+        EyeDisplay.playing = True
+        dx = self.current_eye[-1][0]
+        dy = self.current_eye[-1][1]
+        ball_percentage = self.current_eye[-1][2]
+        for l in range(1, 7):
+            self.display_eye(ball_percentage, l * 2, dx=dx, dy=dy)
+            time.sleep(0.08)
+        EyeDisplay.playing = False
+
+    def display_eye_sleepy(self, ball_percentage=8, lid_percentage=1):
+        if EyeDisplay.playing:
+            return
+        EyeDisplay.playing = True
+        dx = self.current_eye[-1][0]
+        dy = self.current_eye[-1][1]
+        for l in range(1, 9):
+            self.display_eye(ball_percentage, l, dx=dx, dy=dy)
+            time.sleep(0.01)
+        for l in range(1, 5):
+            self.display_eye(ball_percentage, 8 - l, dx=dx, dy=dy)
+            time.sleep(0.1)
+        for l in range(1, 8):
+            self.display_eye(ball_percentage, l + 2, dx=dx, dy=dy)
+            time.sleep(0.05)
+        for l in range(1, 5):
+            self.display_eye(ball_percentage, 9 - l, dx=dx, dy=dy)
+            time.sleep(0.1)
+        for l in range(1, 7):
+            self.display_eye(ball_percentage, l + 5, dx=dx, dy=dy)
+        EyeDisplay.playing = False
 
     def get_eye_lid(self, number):
         number = int(number)
