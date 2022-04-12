@@ -1,13 +1,12 @@
-import OLED_Driver as OLED
 import copy
 import threading
-import random
 import time
 import sys
 import os
-import math
-import json
-from PIL import Image, ImageDraw, ImageFont
+
+sys.path.append(".")
+from eye import OLED_Driver as OLED
+from PIL import Image
 
 defalut_path = os.path.dirname(os.path.abspath(__file__))+"/eyeball"
 
@@ -162,7 +161,6 @@ class EyeDisplay():
         image_name = f'eye_ball_{num}.png' # get eye ball photo, You can change it to your image
         image_path = '/'.join([defalut_path, eye_type, image_name])
         _eye_ball = Image.open(image_path).convert("RGBA")
-        print(image_path)
         return _eye_ball
 
     def display_eye(self, ball_num: int = 1, lid_num: int = 1,
@@ -192,3 +190,4 @@ if __name__ == '__main__':
     a = EyeDisplay()
     a.display_eye()
     time.sleep(1)
+    a.display_eye_sleepy()
