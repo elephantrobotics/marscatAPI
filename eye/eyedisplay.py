@@ -120,7 +120,7 @@ class EyeDisplay():
         dx = self.current_eye[-1][0]
         dy = self.current_eye[-1][1]
         ball_percentage = self.current_eye[-1][2]
-        for l in range(1, 7):
+        for l in range(1, 6):
             self.display_eye(ball_percentage, l * 2, dx=dx, dy=dy)
             time.sleep(0.08)
         EyeDisplay.playing = False

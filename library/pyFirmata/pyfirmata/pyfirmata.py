@@ -651,7 +651,7 @@ class Board(object):
         servo_state
             0 - power off  
             1 - power on 
-            2 - foucs
+            2 - foucs # TODO can only be locked one by one
         '''
         data = [ENABLE_SERVOS]
         data += [servo_no]
