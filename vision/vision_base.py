@@ -10,6 +10,7 @@ import math
 import numpy as np
 import time
 import queue
+import mediapipe as mp
 
 low_blue = np.array([95, 80, 2])
 high_blue = np.array([130, 255, 255])
@@ -29,6 +30,12 @@ class Vision:
         self.recognizer.read('vision/trainer/trainer.yml')
         cascade_path = "vision/trainer/haarcascade_frontalface_default.xml"
         self.face_detector = cv2.CascadeClassifier(cascade_path)
+        
+        # fall people detect
+        self.mpDraw = mp.solutions.drawing_utils
+        self.mpPose = mp.solutions.pose
+        self.pose = self.mpPose.Pose()
+        
         # object recognition
         self.previous_frame = []   # previous frame
         self.MIN_COUNTOUR_COUNT = 2   # min number of contours
@@ -167,9 +174,87 @@ class Vision:
         circle = self.last_circle
         radius, center = circle[0], circle[1]
         cv2.circle(img, center, radius, (0, 255, 0), 2)
+        
+    def findPosition(self, img, draw=True):
+        xList = []
+        yList = []
+        self.lmList = []
+        if self.results.pose_landmarks:
+            for id, lm in enumerate(self.results.pose_landmarks.landmark):
+                h, w, c = img.shape
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                self.lmList.append([id, cx, cy])
+                xList.append(cx)
+                yList.append(cy)
+                if draw:
+                    cv2.circle(img, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
+
+            xmin, xmax = min(xList), max(xList)
+            ymin, ymax = min(yList), max(yList)
+            if draw:
+                cv2.rectangle(img, (xmin - 20, ymin - 20), (xmax + 20, ymax + 20),(0, 255, 0), 2)
+        return self.lmList
+    
+    def midpoint(self,img,p1,p2,draw=True):
+        x1, y1 = self.lmList[p1][1:]
+        x2, y2 = self.lmList[p2][1:]
+        x3=int((x1+x2)/2)
+        y3=int((y1+y2)/2)
+        if draw:
+         cv2.circle(img, (x3, y3), 10, (0, 0, 255), cv2.FILLED)
+         cv2.circle(img, (x3, y3), 15, (0, 0, 255), 2)
+        point={"x":x3,"y":y3}
+        return point
+        
+    def detect_fall_people(self,frame):
+        people_imgRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        self.results = self.pose.process(people_imgRGB)
+        lmList = self.findPosition(frame, True)
+        if len(lmList) != 0:
+            self.i=self.i+1
+            # 两肩中点
+            if self.bs==0:
+                if self.i==1:
+                    self.point_one= self.midpoint(frame, 11, 12)
+                elif self.i==10:
+                    point_ten=self.midpoint(frame, 11, 12)
+                    point_foot=self.midpoint(frame, 29, 30)
+                    spineV =int(math.hypot(point_ten['x']-self.point_one['x'],point_ten['y']-self.point_one['y']))
+                    height_all=int(math.hypot(point_foot['x']-self.point_one['x'],point_foot['y']-self.point_one['y']))
+                    ratio=spineV/height_all
+                    if ratio>0.25:
+                        self.bs=1
+                    else:
+                        self.i=0
+            #两髋中心点
+            point_kuan=self.midpoint(frame, 23, 24,draw=False)
+            # 两脚中点
+            point_foot=self.midpoint(frame, 29, 30,draw=False)
+            # 两个手腕
+            point_hand1 = self.midpoint(frame, 15, 16, draw=False)
+            lie = point_hand1['y']-point_foot['y']
+            baseH=(point_kuan['y']-point_foot['y'])
+            if -50<lie<50 and (baseH>-40 and self.i<30):
+                self.bs=2
+            elif baseH<-40:
+                self.bs=0
+                self.i=0
+            if self.bs==2:
+                self.fall +=1
+                if self.fall >=5:
+                    self.fall = 0
+                    return True
+            else:
+                self.bs=0
+                self.i=0
+            return False
 
     def process_frame(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # fall people
+        status = self.detect_fall_people(frame)
+        
         # qrcode
         corners, ids, rejectImaPoint = cv2.aruco.detectMarkers(
             gray, self.aruco_dict, parameters=self.arucoParams)
@@ -218,9 +303,9 @@ class Vision:
                                    param2=35,
                                    minRadius=10,
                                    maxRadius=150)   # param1=15, param2=7,
-        return corners, ids, frame2, contours, circles, faces, gray
+        return corners, ids, frame2, contours, circles, faces, gray, status
 
-    def if_has_qrcode(self, data, corners, ids):
+    def if_has_qrcode(self,corners, ids):
         # if qrcode
         if len(corners) > 0:
             if ids is not None:   # if aruco marker detected
@@ -229,7 +314,7 @@ class Vision:
         else:
             return None
 
-    def if_has_moving_obj(self, ft, contours):
+    def if_has_moving_obj(self, contours):
         num_contours = len(contours)
         # print("num_contours:",num_contours)
 
@@ -300,7 +385,7 @@ class Vision:
         else:
             return None
 
-    def if_has_ball(self, data, circles):
+    def if_has_ball(self,circles):
         # if ball
         if circles is not None:
             x, y, radius = circles[0][0]
@@ -310,7 +395,7 @@ class Vision:
         else:
             return None
 
-    def if_has_face(self, data, faces, gray, frame):
+    def if_has_face(self, faces, gray, frame):
         # if face
         face_data = []
         confidence_min = 70
@@ -331,10 +416,16 @@ class Vision:
             return {"type":"human","data":face_data}
         else:
             return None
+        
+    def if_has_fall(self,status):
+        if status:
+            return {"type":"fall_people","data":True}
+        return None
 
     def get_face_ball_obj_qrcode(self):
         if not Vision.cam_open:
             Vision.cam_open = True
+            self.pose = self.mpPose.Pose()
             self.cam = cv2.VideoCapture(self.cam_no)
             self.cam.set(3, Vision.cam_width)   # 1280
             self.cam.set(4, Vision.cam_height)   # 720
@@ -342,6 +433,7 @@ class Vision:
             print('Vision ------------> open cam')
         elif Vision.cam_open:
             Vision.cam_open = False
+            self.pose.close()
             self.cam.release()
             print('Vision ------------> close cam\n')
 
@@ -352,28 +444,33 @@ class Vision:
             # frame = self.get_frame()
             frame = self.cam.read()[1]
 
-            corners, ids, frame2, contours, circles, faces, gray = self.process_frame(
+            corners, ids, frame2, contours, circles, faces, gray, status = self.process_frame(
                 frame)
+            
+            # detect fall people
+            ret = self.if_has_fall(status)
+            if ret:
+                return ret
 
             # order: face - ball - obj - QRcode
             # face
-            ret = self.if_has_face(data, faces, gray, frame)
+            ret = self.if_has_face(faces, gray, frame)
             if ret:
                 return ret
 
             # ball
-            ret = self.if_has_ball(data, circles)
+            ret = self.if_has_ball(circles)
             if ret:
                 return ret
 
             # obj
             self.previous_frame = frame2
-            ret = self.if_has_moving_obj(data, contours)
+            ret = self.if_has_moving_obj(contours)
             if ret:
                 return ret
 
             # QRcode
-            ret = self.if_has_qrcode(data, corners, ids)
+            ret = self.if_has_qrcode(corners, ids)
             if ret:
                 return ret
 
@@ -396,8 +493,8 @@ class Vision:
         while (True):
             try:
                 test_num = int(
-                    input("please number(1:face, 2:ball, 3:obj, 4:qrcode): "))
-                if test_num in [1, 2, 3, 4]:
+                    input("please number(1:face, 2:ball, 3:obj, 4:qrcode, 5:detect fall people): "))
+                if test_num in [1, 2, 3, 4, 5]:
                     break
                 else:
                     continue
@@ -411,13 +508,13 @@ class Vision:
         while time.time() - start_time < test_time:
             result = None
             frame = self.cam.read()[1]
-            corners, ids, frame2, contours, circles, faces, gray = self.process_frame(
+            corners, ids, frame2, contours, circles, faces, gray, status = self.process_frame(
                 frame)
             data = {}
 
             if test_num == 1:   # face
                 #cv2.imshow('result', frame)
-                result = self.if_has_face(data, faces, gray, frame)
+                result = self.if_has_face(faces, gray, frame)
 
             elif test_num == 2:   # ball
                 self.draw_circle(frame)
@@ -437,6 +534,8 @@ class Vision:
                 #cv2.imshow('result', frame)
                 result = self.if_has_qrcode(data, corners, ids)
 
+            elif test_num == 5:
+                result = self.if_has_fall(status)
             if result:
                 print(str(result['type'])+' '+str(result['data']))
 

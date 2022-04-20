@@ -24,9 +24,7 @@ class Voice():
         self.stream = None
         pass
 
-    def speak_config(self):
-        language = "Chinese"
-
+    def speak_config(self,language="English"):
         config = pocketsphinx.pocketsphinx.Decoder.default_config()
         if language == "English":
             config.set_string('-hmm', self.path + '/en-us')
@@ -63,7 +61,7 @@ class Voice():
     def get_commands(self, speak_queues):
         if not speak_queues.empty():
             return speak_queues.get()
-        return ''
+        return None
 
     def speak_monitor_test(self, speak_queue, decoder, command):
         p = pyaudio.PyAudio()
@@ -213,11 +211,9 @@ class Voice():
 
 # Test voice data
 def test_voice():
-
     vc = Voice()
-    command = []
     command = vc.load_word()
-    decoder = vc.speak_config()
+    decoder = vc.speak_config("English")
 
     speak_queue = vc.get_speak_queue()
 
@@ -227,9 +223,8 @@ def test_voice():
 
     while True:
         commands = vc.get_commands(speak_queue)
-        if commands != '':
-            pass
-            # print(commands)
+        if commands:
+            print(commands)
 
 
 if __name__ == "__main__":
