@@ -130,6 +130,7 @@ The vision is for using the camera on the nose to detect fall people, detect obj
 ## Instructions
 
 ### Integrated detection
+
 ```python
 import vision.vision_base
 
